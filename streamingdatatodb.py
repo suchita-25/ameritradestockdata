@@ -1,3 +1,7 @@
+"""
+This program gets the streaming Data from TD Ameritrade and store in Timescale DB
+"""
+
 import asyncio
 import psycopg2
 from tda.auth import easy_client
@@ -10,18 +14,21 @@ CONN = psycopg2.connect(host=config.DB_HOST,
                         user=config.DB_USER,
                         password=config.DB_PASS)
 
-cursor = CONN.cursor()
+CURSOR = CONN.cursor()
 
 CLIENT = easy_client(
     api_key=config.api_key,
     redirect_uri=config.redirect_uri,
     token_path=config.token_path)
 
-STREAM_CLIENT = StreamClient(client, account_id=config.account_id)
+STREAM_CLIENT = StreamClient(CLIENT, account_id=config.account_id)
 
 
 def order_book_handler(msg):
 
+    """
+    This is the Message Handler, and store streaming Data in Timescale DB
+    """
 
     count = len(msg['content'])
     CONN.commit()
@@ -37,8 +44,8 @@ def order_book_handler(msg):
             sql_str = """INSERT INTO stocksdata({0},{1}) VALUES ({2}, {3})""" \
                 .format('timestamp', cols_str, msg['timestamp'], vals_str)
             print(sql_str)
-            cursor.execute(sql_str, vals)
-    except:
+            CURSOR.execute(sql_str, vals)
+    except KeyboardInterrupt:
         print('Halted')
         CONN.commit()
 
@@ -46,6 +53,9 @@ def order_book_handler(msg):
 CONN.commit()
 
 async def read_stream():
+    """
+    This method reads the input csv file and creates the streaming connection to TD Ameritrade.
+    """
     await STREAM_CLIENT.login()
     await STREAM_CLIENT.quality_of_service(StreamClient.QOSLevel.EXPRESS)
 
@@ -65,21 +75,3 @@ async def read_stream():
     while True:
         await STREAM_CLIENT.handle_message()
 asyncio.run(read_stream())
-
-# async def main():
-#     print('Started, press ctrl+C')
-#     asyncio.run(read_stream())
-#
-# if __name__ == '__main__':
-#
-#     async def close():
-#         print('Finalizing...')
-#         await asyncio.sleep(1)
-#
-#         loop = asyncio.get_event_loop()
-#         try:
-#             loop.run_until_complete(main())
-#         except KeyboardInterrupt:
-#             loop.run_until_complete(close())
-#         finally:
-#             print('Program finished')#
