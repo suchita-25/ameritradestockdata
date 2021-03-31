@@ -35,15 +35,15 @@ def order_book_handler(msg):
     try:
         for i in range(count):
             dict2 = {**msg['content'][i]}
-            print(dict2)
+            # print(dict2)
             cols = dict2.keys()
             cols_str = ','.join(cols)
             vals = [dict2[k] for k in cols]
-            print("Vals", vals)
+            # print("Vals", vals)
             vals_str = ','.join(["%s" for j in range(len(vals))])
             sql_str = """INSERT INTO stocksdata({0},{1}) VALUES ({2}, {3})""" \
                 .format('timestamp', cols_str, msg['timestamp'], vals_str)
-            print(sql_str)
+            # print(sql_str)
             CURSOR.execute(sql_str, vals)
     except KeyboardInterrupt:
         print('Halted')
