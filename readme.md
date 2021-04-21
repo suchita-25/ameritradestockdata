@@ -17,4 +17,4 @@ Follow the below steps:
 6. Run streamingdatatodb.py, 
    to store the incoming JSON to DB.
 7. The Stocks Data is being stored in Timeseries Database: Timescale DB.
-8. Stocks Price prediction using FB prophet.
+8. Stocks Price prediction using FB prophet (stockprediction.ipynb)
